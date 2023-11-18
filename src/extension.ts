@@ -1,13 +1,15 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ASTProvider } from './treeviewAST';
+import { initTreeview } from './treeviewAST';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// I have two possible strategies and I want to support both of them
+// 1/ allocate everything in the extension.ts file
+// 2/ allocate in the files and call a call a init for each of them
+//
+// The second one is more modular but for a small extension it is unnecessary
+// but it may hide dependencies if any
+
 export function activate(context: vscode.ExtensionContext) {
-	const astProvider = new ASTProvider();
-	vscode.window.registerTreeDataProvider('ASTTreeview', astProvider);
+	initTreeview(context)
 }
 
 // This method is called when your extension is deactivated
