@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import ts from 'typescript';
+import { getEnumBitFlags, EnumType } from './utils';
 
 let f = ts.factory
 let block: ts.Block = f.createBlock([f.createExpressionStatement(f.createNumericLiteral(1))]);
@@ -39,90 +40,13 @@ export function initTreeview(context: vscode.ExtensionContext) {
 // treeView.reveal(itemToSelect, { select: true, focus: true });
 
 
-function countPowersOfTwo(n : number) {
-    let result = 0 ;
-    for (let i = 0;; i++) {
-        let power = Math.pow(2, i);
-        if (power > n) {break;}
-        if (n & power) {result++}
-    }
-    return result;
-}
-
-
-function sortFlags(enum_: { [key: string]: string }) : string[] {
-    let powerArrays: string[][] = [];
-    for (let enumMember in enum_) {
-        let val = enum_[enumMember];
-        let n = Number(val);
-        let powers = countPowersOfTwo(n);
-        if (powerArrays[powers] === undefined) { // create the array if it doesn't exist, no Perl autovivifying, bummer
-            powerArrays[powers] = [];
-        }
-        powerArrays[powers].push(enumMember);
-    }
-    return powerArrays.reverse().flat();
-}
-
-// Handle fake bitenums like ts.NodeFlags. Note the AwaitUsing = 6 which should not be reported as Const | Using
-// So we sort the flags on the number of powers of two they contain and consume first the ones with the most powers of 
-// two. Or maybe AwaitUsing should _also_ be reported as Await | Using ?
-
-// enum NodeFlags {
-//     None = 0,
-//     Let = 1,
-//     Const = 2,
-//     Using = 4,
-//     AwaitUsing = 6,
-//     NestedNamespace = 8,
-//     Synthesized = 16,
-//     Namespace = 32,
-//     ...
-// }
-
-
-interface BitEnumInfo  { 
-    enum_: { [key: string]: string },
-    sortedFlags: string[]
-}
-let knownBitEnums : BitEnumInfo[]
-
-
-export function getEnumBitFlags(flags: number, enum_: { [key: string]: string }): string {
-    // insteead of calculating at each time we  ache the sorted flags for each bitenum.
-    // The cost is we have to keep track of the bitenums we have seen and search them lineraly
-    let sortedFlags: string[];
-    let foundEnum = false;
-    for (let bitEnumInfo of knownBitEnums) {
-        if (bitEnumInfo.enum_ === enum_) {
-            sortedFlags = bitEnumInfo.sortedFlags;
-            break;
-        }
-    }
-    if (!foundEnum) {
-        sortedFlags = sortFlags(enum_);
-        knownBitEnums.push({enum_, sortedFlags});
-    }
-    let recognizedFlags: string[] = [];
-    for (let enumMember in sortFlags) {
-        let val : number  = Number(enum_[enumMember]);
-
-        if ((flags & Number(val)) !== 0) {
-            flags 
-            recognizedFlags.push(enumMember);
-        }
-    }
-    return recognizedFlags.join(' ');
-}
-
-
-
 function stringifyItem(key: string, val: any): string {
+    let t: EnumType  = ts.NodeFlags
     switch (key) {
         case 'kind':
             return `${key}: ${ts.SyntaxKind[val]}`;
         case 'flags':
-            return `${key}: ${getEnumBitFlags(val, ts.NodeFlags as unknown as { [key: string]: string })}`;
+            return `${key}: ${getEnumBitFlags(val, t)}`;
 
         default:
             return `${key}: ${val}`;

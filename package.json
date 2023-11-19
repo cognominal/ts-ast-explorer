@@ -1,4 +1,4 @@
- {
+{
   "name": "ts-ast-explorer",
   "displayName": "Ts AST Explorer",
   "description": "An AST explorer for typescript, javascript, JSON",
@@ -35,18 +35,32 @@
     "watch": "tsc -watch -p ./",
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "test:unit": "mocha -r ts-node/register 'src/unit-tests/**/*.test.ts'"
   },
   "devDependencies": {
-    "@types/vscode": "^1.84.0",
+    "@types/chai": "^4.3.10",
     "@types/mocha": "^10.0.2",
     "@types/node": "18.x",
+    "@types/vscode": "^1.84.0",
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/test-cli": "^0.0.4",
+    "@vscode/test-electron": "^2.3.6",
+    "chai": "^4.3.10",
     "eslint": "^8.50.0",
     "glob": "^10.3.3",
     "mocha": "^10.2.0",
-    "typescript": "^5.2.2",
-    "@vscode/test-electron": "^2.3.4"
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+  },
+  "mocha": {
+    "require": "ts-node/register",
+    "extension": [
+      "ts"
+    ],
+    "spec": "src/unit-tests/**/*.test.ts"
   }
 }
