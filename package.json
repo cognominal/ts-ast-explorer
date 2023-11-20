@@ -27,6 +27,16 @@
           "contextualTitle": "AST treeview"
         }
       ]
+    },
+    "configuration": {
+      "title": "Typescript AST Explorer",
+      "properties": {
+        "ts-ast-explorer.updateASTOnSaveOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Update the AST when a file is saved."
+        }
+      }
     }
   },
   "scripts": {
@@ -54,8 +64,7 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "mocha": {
     "require": "ts-node/register",
     "extension": [
