@@ -2,6 +2,7 @@
   "name": "ts-ast-explorer",
   "displayName": "Ts AST Explorer",
   "description": "An AST explorer for typescript, javascript, JSON",
+  "publisher": "cognominal",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.84.0"
@@ -18,7 +19,16 @@
         "title": "Hello World"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
           "id": "package-explorer",
+          "title": "Package Explorer",
+          "icon": "media/dep.svg"
+        }
+      ]
+    },
+
     "views": {
       "package-explorer": [
         {
