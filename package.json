@@ -46,7 +46,8 @@
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "test:unit": "mocha -r ts-node/register 'src/unit-tests/**/*.test.ts'"
+    "test:unit": "mocha -r ts-node/register 'src/unit-tests/**/*.test.ts'",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@types/chai": "^4.3.10",
@@ -60,11 +61,11 @@
     "chai": "^4.3.10",
     "eslint": "^8.50.0",
     "glob": "^10.3.3",
+    "husky": "^8.0.3",
     "mocha": "^10.2.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
-  "dependencies": {},
   "mocha": {
     "require": "ts-node/register",
     "extension": [
