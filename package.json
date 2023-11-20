@@ -18,6 +18,7 @@
         "title": "Hello World"
       }
     ],
+          "id": "package-explorer",
     "views": {
       "package-explorer": [
         {
