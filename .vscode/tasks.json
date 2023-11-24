@@ -17,6 +17,19 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "test",
+			"type": "shell",
+			"command": "node ./out/vscode-tests/runTest.js",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
 			"type": "npm",
 			"script": "watch",
 			"problemMatcher": "$tsc-watch",

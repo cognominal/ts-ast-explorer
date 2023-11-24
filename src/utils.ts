@@ -1,3 +1,16 @@
+import * as ts from 'typescript';
+import * as vscode from 'vscode';
+
+
+export function positionToOffset(document: vscode.TextDocument, position: vscode.Position): number {
+    let offset = 0;
+    for (let i = 0; i < position.line; i++) {
+        offset += document.lineAt(i).text.length + 1; // +1 for the newline character
+    }
+    offset += position.character;
+    return offset;
+}
+
 
 export function nrOfBits(n : number) {
     let result = 0 ;
@@ -98,3 +111,11 @@ export function getEnumBitFlags(flags: number, enum_: EnumType): string {
     }
 }
 
+export function compile(code: string| vscode.TextEditor): ts.SourceFile {
+    // Compile the source code to AST
+    if (typeof code !== 'string') {
+        code = code.document.getText();
+    }
+    let ast = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    return ast
+}
