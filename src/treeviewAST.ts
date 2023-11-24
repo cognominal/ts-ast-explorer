@@ -39,8 +39,8 @@ export class ASTProvider implements vscode.TreeDataProvider<ASTItem> {
     readonly onDidChangeTreeData: vscode.Event<ASTItem | undefined | null | void> = this.onDidChangeTreeDataEmitter.event;
 
     // set root from an AStItem or ts.Node, refresh the tree, and returns its root
-    refresh(root: ASTItem| ts.Node ): ASTItem {
-        this.root = root instanceof ASTItem ? root : new ASTItem('root', root, vscode.TreeItemCollapsibleState.Expanded)  
+    refresh(root: ASTItem | ts.Node): ASTItem {
+        this.root = root instanceof ASTItem ? root : new ASTItem('root', root, vscode.TreeItemCollapsibleState.Expanded)
         this.onDidChangeTreeDataEmitter.fire()
         return this.root;
     }
@@ -54,11 +54,22 @@ export class ASTProvider implements vscode.TreeDataProvider<ASTItem> {
         return element;
     }
     getChildren(element?: ASTItem | undefined): vscode.ProviderResult<ASTItem[]> {
-        if (!this.root ) { return [] }
+        if (!this.root) { return [] }
         if (!element) {
             element = this.root
         }
-        const items = element.astNode.getChildren().map((node) => new ASTItem(ts.SyntaxKind[node.kind], node, vscode.TreeItemCollapsibleState.Expanded))
+        const items = element.astNode.getChildren().map((node) => {
+            const item = new ASTItem(ts.SyntaxKind[node.kind], node, vscode.TreeItemCollapsibleState.Expanded);
+            item.description = ''
+            const flags = node.flags
+            if (flags !== 0) {
+                item.description = '(' + getEnumBitFlags(node.flags, ts.NodeFlags) + ') ' + flags + ' '
+            }
+            if (node.kind === ts.SyntaxKind.Identifier || node.kind === ts.SyntaxKind.StringLiteral) {
+                item.description = node.getText();
+            }
+            return item
+        })
         console.log(items)
         return items;
     }
