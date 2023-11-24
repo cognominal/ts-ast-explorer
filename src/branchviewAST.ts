@@ -38,11 +38,12 @@ export class BranchProvider implements vscode.TreeDataProvider<BranchItem> {
     // Eventually we want to display the current node as per the selection
 
     getChildren(element?: BranchItem | undefined): vscode.ProviderResult<BranchItem[]> {
+
         function handleKey(key: string, node: ts.Node): BranchItem {
             let val = node[key as keyof ts.Node];
             let str = typeof val === 'object' ? key : stringifyItem(key, val);
             let collapsible = vscode.TreeItemCollapsibleState.None
-            if (typeof val === 'object') { collapsible = vscode.TreeItemCollapsibleState.Expanded }
+            if (typeof val === 'object') { collapsible = vscode.TreeItemCollapsibleState.None }
             return new BranchItem(str, val, collapsible);
 
         }
@@ -62,7 +63,8 @@ export class BranchProvider implements vscode.TreeDataProvider<BranchItem> {
 
         let children: BranchItem[] = [];
         if (!this.root) { return [] }
-        if (element) {
+        if (!element) {
+            element = this.root
             const content = element.content
             const node = element.content as ts.Node
             if (node['kind']) {

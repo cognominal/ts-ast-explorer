@@ -34,11 +34,11 @@
           "id": "ASTTreeview",
           "name": "AST explorer",
           "icon": "media/dep.svg",
-          "contextualTitle": "AST treeview"
+          "contextualTitle": "ts AST treeview"
         },
         {
           "id": "ASTBranchview",
-          "name": "TypeScript AST"
+          "name": "ts AST branch"
         }
       ]
     },
