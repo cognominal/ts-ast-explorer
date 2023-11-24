@@ -59,7 +59,9 @@ export class ASTProvider implements vscode.TreeDataProvider<ASTItem> {
             element = this.root
         }
         const items = element.astNode.getChildren().map((node) => {
-            const item = new ASTItem(ts.SyntaxKind[node.kind], node, vscode.TreeItemCollapsibleState.Expanded);
+
+            const collapse = node.getChildCount() > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None
+            const item = new ASTItem(ts.SyntaxKind[node.kind], node, collapse);
             item.description = ''
             const flags = node.flags
             if (flags !== 0) {
