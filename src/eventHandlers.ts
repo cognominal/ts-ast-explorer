@@ -44,15 +44,12 @@ export function onChangeEditor(editor: vscode.TextEditor | undefined): void {
 
         let source = editor.document.getText();
 
-        // Compile the source code to AST
-        if (astProvider) {
-            let ast = compile(source)
-            let treeItem = new ASTItem('root', ast, vscode.TreeItemCollapsibleState.Expanded)
-            astProvider.refresh(treeItem)
-        }
+        // Compile the source code to AST and refresh the providers
+        let ast = compile(source)
+        astProvider.refresh(ast)
+        branchProvider.refresh(ast)
     }
 }
-
 
 export function onChangeEditorSelection(e: vscode.TextEditorSelectionChangeEvent): void {
     // if (e.textEditor === vscode.window.activeTextEditor) {

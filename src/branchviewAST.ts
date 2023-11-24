@@ -20,9 +20,10 @@ export class BranchProvider implements vscode.TreeDataProvider<BranchItem> {
     readonly onDidChangeTreeData: vscode.Event<BranchItem | undefined | null | void> = this.onDidChangeTreeDataEmitter.event;
 
 
-    refresh(root: BranchItem): void {
-        this.root = root
+    refresh(root: BranchItem| ts.Node): BranchItem {
+        this.root = root instanceof BranchItem ? root : new BranchItem('root', root, vscode.TreeItemCollapsibleState.Expanded)
         this.onDidChangeTreeDataEmitter.fire();
+        return this.root;
     }
 
     constructor(
