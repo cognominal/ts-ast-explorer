@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import ts from 'typescript';
 import { getEnumBitFlags, EnumType } from './utils';
 import { compile } from './utils';
-import { onChangeEditor, onChangeEditorSelection, onChangeTreeviewSelection } from './eventHandlers';
+
 
 // let f = ts.factory
 // let block: ts.Block = f.createBlock([f.createExpressionStatement(f.createNumericLiteral(1))]);
@@ -59,20 +59,22 @@ export class ASTProvider implements vscode.TreeDataProvider<ASTItem> {
             element = this.root
         }
         const items = element.astNode.getChildren().map((node) => {
-
+            const kind = ts.SyntaxKind[node.kind]
             const collapse = node.getChildCount() > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None
-            const item = new ASTItem(ts.SyntaxKind[node.kind], node, collapse);
+            const item = new ASTItem(kind, node, collapse);
             item.description = ''
             const flags = node.flags
+            const shortTextNode = kind.match(/keyword|token|identifier|literal/i);
+
             if (flags !== 0) {
                 item.description = '(' + getEnumBitFlags(node.flags, ts.NodeFlags) + ') ' + flags + ' '
             }
-            if (node.kind === ts.SyntaxKind.Identifier || node.kind === ts.SyntaxKind.StringLiteral) {
+            if (shortTextNode) {
                 item.description = node.getText();
             }
             return item
         })
-        console.log(items)
+        // console.log(items)
         return items;
     }
 
