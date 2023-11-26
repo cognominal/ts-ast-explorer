@@ -62,23 +62,23 @@ export function onChangeEditor(editor: vscode.TextEditor | undefined): void {
 }
 
 let nrCalls = 0 // detect infinite recursion
-export function onChangeEditorSelection(e: vscode.TextEditorSelectionChangeEvent): void {
+export async function onChangeEditorSelection(e: vscode.TextEditorSelectionChangeEvent): Promise<void> {
     if (nrCalls > 100) {
         debugger
     }
     // if (e.textEditor === vscode.window.activeTextEditor) {
     const range: vscode.Range = e.selections[0]
-    // Compile the source code to AST
-    let ast = compile(e.textEditor)
-    if (!ast) {
+
+    const rootItem = astProvider.root
+    if (!rootItem) {
         return
     }
-    const rootItem = astProvider.refresh(ast)
+
     let deepestItem = deepesItemInRange(rootItem, range)
     if (!deepestItem) {
         return
     }
-    treeview.reveal(deepestItem, { select: true, focus: true, expand: true });
+    await treeview.reveal(deepestItem, { select: true, focus: true, expand: true });
     return
 }
 
@@ -94,8 +94,8 @@ function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
     let iteration = 0;
     do {
         deepestItem = foundItem;
-        if (iteration === 0) { // already have the kids
-            kids = astProvider.getChildren(item);
+        if (iteration !== 0) { 
+            kids = astProvider.getChildren(deepestItem);
         }
         if (!kids) {
             foundItem = undefined;
@@ -107,18 +107,6 @@ function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
         iteration++;
     } while (foundItem);
     return deepestItem;
-}
-
-function setSelectionFromItem(item: ASTItem) {
-    let node = item.astNode
-    let range = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
-    let position = new vscode.Position(range.line, range.character)
-    let selection = new vscode.Selection(position, position)
-    let editor = vscode.window.activeTextEditor
-    if (editor) {
-        editor.selection = selection
-        editor.revealRange(selection)
-    }
 }
 
 function itemInRange(item: ASTItem, range: vscode.Range): boolean {
