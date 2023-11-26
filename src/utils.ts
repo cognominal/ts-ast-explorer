@@ -2,16 +2,6 @@ import * as ts from 'typescript';
 import * as vscode from 'vscode';
 
 
-export function positionToOffset(document: vscode.TextDocument, position: vscode.Position): number {
-    let offset = 0;
-    for (let i = 0; i < position.line; i++) {
-        offset += document.lineAt(i).text.length + 1; // +1 for the newline character
-    }
-    offset += position.character;
-    return offset;
-}
-
-
 export function nrOfBits(n : number) {
     let result = 0 ;
     for (let i = 0;; i++) {
@@ -54,8 +44,10 @@ export function curateEnum(enum_: EnumType): CuratedEnum {
     return {sortedEnumSymbols: sorted, zeroName};
 }
 
-// Handle fake bitenums like ts.NodeFlags. Note the AwaitUsing = 6 which should not be reported as Const | Using
-// So we sort the flags on the number of powers of two they contain and consume first the ones with the most powers of 
+// Handle fake bitenums like ts.NodeFlags. Note the AwaitUsing = 6 
+// which should not be reported as Const | Using
+// So we sort the flags on the number of powers of two they contain and 
+//consume first the ones with the most powers of 
 // two. Or maybe AwaitUsing should _also_ be reported as Await | Using ?
 
 // enum NodeFlags {
@@ -64,9 +56,6 @@ export function curateEnum(enum_: EnumType): CuratedEnum {
 //     Const = 2,
 //     Using = 4,
 //     AwaitUsing = 6,
-//     NestedNamespace = 8,
-//     Synthesized = 16,
-//     Namespace = 32,
 //     ...
 // }
 
@@ -111,11 +100,41 @@ export function getEnumBitFlags(flags: number, enum_: EnumType): string {
     }
 }
 
-export function compile(code: string| vscode.TextEditor): ts.SourceFile {
-    // Compile the source code to AST
-    if (typeof code !== 'string') {
-        code = code.document.getText();
+type SupportedLangs = {
+    [key: string]: ts.ScriptKind;
+}
+const supportedLangs : SupportedLangs = {
+    "typescript": ts.ScriptKind.TS,
+    "typescriptreact": ts.ScriptKind.TSX,
+    "javascript": ts.ScriptKind.JS,
+    "javascriptreact": ts.ScriptKind.JSX,
+    "json": ts.ScriptKind.JSON,
+    // "external": ts.ScriptKind.External
+}
+
+function isSupportedLang(lang: string): boolean {
+    return lang in supportedLangs;
+}
+
+export function compile(editor: vscode.TextEditor): ts.SourceFile {
+    const code = editor.document.getText();
+        
+    let filetype = getFileType();
+    let scriptKind: ts.ScriptKind = ts.ScriptKind.External;
+    if (typeof filetype === 'string' && isSupportedLang(filetype)) {
+        scriptKind = supportedLangs[filetype];
     }
-    let ast = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-    return ast
+
+    let ast = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.Latest, true, scriptKind);
+    return ast;
+}
+function getFileType(): string | undefined {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+        const document = activeEditor.document;
+        const id = document.languageId;
+        console.log('getFileType ' + id)
+        return id;
+    }
+    return undefined;
 }
