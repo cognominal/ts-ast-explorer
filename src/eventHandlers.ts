@@ -24,9 +24,11 @@ export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent
     console.log("astitem " + astItem)
     if (astItem) {
         let node = astItem.astNode
-        let range = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
-        let position = new vscode.Position(range.line, range.character)
-        let selection = new vscode.Selection(position, position)
+        let start = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
+        let startPosition = new vscode.Position(start.line, start.character)
+        let end = node.getSourceFile().getLineAndCharacterOfPosition(node.getEnd())
+        let endPosition = new vscode.Position(end.line, end.character)
+        let selection = new vscode.Selection(startPosition, endPosition)
         let editor = vscode.window.activeTextEditor
         if (editor) {
             try {
