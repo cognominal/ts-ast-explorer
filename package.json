@@ -29,7 +29,7 @@
       ]
     },
     "views": {
-      "explorer": [
+      "package-explorer": [
         {
           "id": "ASTTreeview",
           "name": "AST explorer",
