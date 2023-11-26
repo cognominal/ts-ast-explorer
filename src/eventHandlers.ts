@@ -18,10 +18,8 @@ export function initEventHandlers() {
 
 }
 
-
 export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent<ASTItem>): void {
     let astItem = e.selection[0]
-    console.log("astitem " + astItem)
     if (astItem) {
         let node = astItem.astNode
         let start = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
@@ -31,18 +29,8 @@ export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent
         let selection = new vscode.Selection(startPosition, endPosition)
         let editor = vscode.window.activeTextEditor
         if (editor) {
-            try {
                 editor.selection = selection
                 editor.revealRange(selection)
-
-            } catch (error) {
-                console.error('Error setting selection:', error)
-            }
-
-            // if (editor) {
-            //     editor.selection = selection
-            //     editor.revealRange(selection)
-            // }
         }
     }
 }
