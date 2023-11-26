@@ -1,27 +1,27 @@
 import { treeview, astProvider, branchview, branchProvider } from './extension'
 import * as vscode from 'vscode';
 import { ASTItem } from './treeviewAST';
-import { compile, positionToOffset } from './utils';
+import { compile } from './utils';
 import { BranchItem } from './branchviewAST';
 import * as ts from 'typescript';
 
 
 
 export function initEventHandlers() {
-    // onChangeEditor(vscode.window.activeTextEditor)
     treeview.onDidChangeSelection(onChangeTreeviewSelection)
     branchview.onDidChangeSelection(onChangeBranchviewSelection)
-
     vscode.window.onDidChangeActiveTextEditor(onChangeEditor);
     vscode.window.onDidChangeTextEditorSelection(onChangeEditorSelection)
+
     onChangeEditor(vscode.window.activeTextEditor)
 
 
 }
 
+
 export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent<ASTItem>): void {
     let astItem = e.selection[0]
-    console.log(astItem)
+    console.log("astitem " + astItem)
     if (astItem) {
         let node = astItem.astNode
         let range = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
@@ -29,8 +29,18 @@ export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent
         let selection = new vscode.Selection(position, position)
         let editor = vscode.window.activeTextEditor
         if (editor) {
-            editor.selection = selection
-            editor.revealRange(selection)
+            try {
+                editor.selection = selection
+                editor.revealRange(selection)
+
+            } catch (error) {
+                console.error('Error setting selection:', error)
+            }
+
+            // if (editor) {
+            //     editor.selection = selection
+            //     editor.revealRange(selection)
+            // }
         }
     }
 }
@@ -42,74 +52,85 @@ export function onChangeEditor(editor: vscode.TextEditor | undefined): void {
         let languageId = editor.document.languageId;
         console.log(`Active editor changed to: ${editor.document.fileName} with languageId: ${languageId}`);
 
-        let source = editor.document.getText();
-
         // Compile the source code to AST and refresh the providers
-        let ast = compile(source)
+        let ast = compile(editor)
         astProvider.refresh(ast)
         branchProvider.refresh(ast)
     }
 }
 
+let nrCalls = 0 // detect infinite recursion
 export function onChangeEditorSelection(e: vscode.TextEditorSelectionChangeEvent): void {
+    if (nrCalls > 100) {
+        debugger
+    }
     // if (e.textEditor === vscode.window.activeTextEditor) {
-    const position: vscode.Position = e.selections[0].active;
-    console.log(`Cursor moved to line ${position.line + 1}`);
+    const range: vscode.Range = e.selections[0]
     // Compile the source code to AST
     let ast = compile(e.textEditor)
     if (!ast) {
         return
     }
-    const root = astProvider.refresh(ast)
-    let offset: number = positionToOffset(e.textEditor.document, position)
-    let item = findItem(root, position)
-    if (!item) {
+    const rootItem = astProvider.refresh(ast)
+    let deepestItem = deepesItemInRange(rootItem, range)
+    if (!deepestItem) {
         return
     }
-    treeview.reveal(item, { select: true, focus: true, expand: true });
+    treeview.reveal(deepestItem, { select: true, focus: true, expand: true });
     return
-    function findItem(item: ASTItem, position: vscode.Position): ASTItem | null {
-        if (!inRange(position, item)) {
-            return null;
-        }
-
-        if (item.astNode.getChildAt(offset)) {
-            const kids = astProvider.getChildren(item);
-            if (!kids) {
-                return null
-            }
-            for (const child of kids as ASTItem[]) {
-                const foundItem = findItem(child, position);
-                if (foundItem) {
-                    return foundItem;
-                }
-            }
-        }
-
-        return null;
-    }
-    // test if the postion is in the range of the astNode
-    function inRange(position: vscode.Position, astItem: ASTItem) {
-        let node = astItem.astNode
-        let range = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
-        let startLine = range.line
-        let startCharacter = range.character
-        range = node.getSourceFile().getLineAndCharacterOfPosition(node.getEnd())
-        let endLine = range.line
-        let endCharacter = range.character
-        return position.line >= startLine && position.line <= endLine &&
-            ((position.line === startLine && position.character >= startCharacter) ||
-                (position.line === endLine && position.character <= endCharacter))
-    }
-
-
-
-    // TODO: Use the AST for further processing
-
-    // Refresh the tree view provider
-    if (astProvider) {
-        astProvider.refresh(ast);
-    }
-    // }
 }
 
+// find the deepest items that contains the range
+function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
+    let kids = astProvider.getChildren(item);
+
+    if (!astProvider || !kids) {
+        return null;
+    }
+    let deepestItem;
+    let foundItem: ASTItem | undefined = item;
+    let iteration = 0;
+    do {
+        deepestItem = foundItem;
+        if (iteration === 0) { // already have the kids
+            kids = astProvider.getChildren(item);
+        }
+        if (!kids) {
+            foundItem = undefined;
+        } else {
+            foundItem = (kids as ASTItem[]).find((child) => {
+                return itemInRange(child, range)
+            });
+        }
+        iteration++;
+    } while (foundItem);
+    return deepestItem;
+}
+
+function setSelectionFromItem(item: ASTItem) {
+    let node = item.astNode
+    let range = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart())
+    let position = new vscode.Position(range.line, range.character)
+    let selection = new vscode.Selection(position, position)
+    let editor = vscode.window.activeTextEditor
+    if (editor) {
+        editor.selection = selection
+        editor.revealRange(selection)
+    }
+}
+
+function itemInRange(item: ASTItem, range: vscode.Range): boolean {
+    let node: ts.Node = item.astNode;
+    let sourceFile = node.getSourceFile();
+
+    let start = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+    let end = ts.getLineAndCharacterOfPosition(sourceFile, node.getEnd());
+
+    const itemRange = new vscode.Range(
+        start.line,
+        start.character,
+        end.line,
+        end.character
+    );
+    return itemRange.contains(range);
+}
