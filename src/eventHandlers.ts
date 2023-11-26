@@ -18,7 +18,7 @@ export function initEventHandlers() {
 
 }
 
-export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent<ASTItem>): void {
+export async function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent<ASTItem>): Promise<void> {
     let astItem = e.selection[0]
     if (astItem) {
         let node = astItem.astNode
@@ -33,6 +33,7 @@ export function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChangeEvent
                 editor.revealRange(selection)
         }
     }
+    await branchProvider.refresh(astItem.astNode)
 }
 export function onChangeBranchviewSelection(e: vscode.TreeViewSelectionChangeEvent<BranchItem>): void {
 }
@@ -45,7 +46,6 @@ export function onChangeEditor(editor: vscode.TextEditor | undefined): void {
         // Compile the source code to AST and refresh the providers
         let ast = compile(editor)
         astProvider.refresh(ast)
-        branchProvider.refresh(ast)
     }
 }
 
