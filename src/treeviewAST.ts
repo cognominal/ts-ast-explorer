@@ -38,17 +38,19 @@ export class ASTProvider implements vscode.TreeDataProvider<ASTItem> {
         }
         const items = element.astNode.getChildren().map((node) => {
             const kind = ts.SyntaxKind[node.kind]
+            const isKeyword = kind.match(/Keyword/)
+            const shortKind : string = isKeyword ? '' : kind 
             const collapse = node.getChildCount() > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None
-            const item = new ASTItem(kind, node, collapse, element);
+            const item = new ASTItem(shortKind, node, collapse, element);
             item.description = ''
             const flags = node.flags
-            const shortTextNode = kind.match(/keyword|token|identifier|literal/i);
+            const tokenNode = kind.match(/keyword|token|identifier|literal/i);
 
             if (flags !== 0) {
                 item.description = '(' + getEnumBitFlags(node.flags, ts.NodeFlags) + ') ' + flags + ' '
             }
-            if (shortTextNode) {
-                item.description = node.getText();
+            if (tokenNode) {
+                item.description += node.getText();
             }
             return item
         })
