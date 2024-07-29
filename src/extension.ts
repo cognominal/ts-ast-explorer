@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { initTreeview,  ASTItem, ASTProvider } from './treeviewAST';
-import { initBranchview,  BranchItem, BranchProvider } from './branchviewAST';
+// import { initBranchview,  BranchItem, BranchProvider } from './branchviewAST';
 import { channelName } from './constants';
 import { decorateChannel } from './utils/decorateOutputChannel';
 import { initEventHandlers } from './eventHandlers';
@@ -16,14 +16,14 @@ import { initEventHandlers } from './eventHandlers';
 export let updateASTOnSaveOnlyConfigOption: boolean;
 export let treeview: vscode.TreeView<ASTItem> 
 export let astProvider: ASTProvider 
-export let branchview: vscode.TreeView<BranchItem> 
-export let branchProvider: BranchProvider 
+// export let branchview: vscode.TreeView<BranchItem> 
+// export let branchProvider: BranchProvider 
 
 
 export function activate(context: vscode.ExtensionContext) {
   let config = vscode.workspace.getConfiguration('ts-ast-explorer');
   updateASTOnSaveOnlyConfigOption = config.get('updateASTOnSaveOnly', true);
-  ({ branchview, branchProvider } = initBranchview(context));
+  // ({ branchview, branchProvider } = initBranchview(context));
   ({ treeview, astProvider } = initTreeview(context));
   initEventHandlers()
   const channel = vscode.window.createOutputChannel(channelName)

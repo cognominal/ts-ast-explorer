@@ -1,4 +1,4 @@
-import { treeview, astProvider, branchview, branchProvider } from './extension'
+import { treeview, astProvider } from './extension'
 import * as vscode from 'vscode';
 import { ASTItem } from './treeviewAST';
 import { compile } from './utils';
@@ -9,7 +9,7 @@ import * as ts from 'typescript';
 
 export function initEventHandlers() {
     treeview.onDidChangeSelection(onChangeTreeviewSelection)
-    branchview.onDidChangeSelection(onChangeBranchviewSelection)
+    // branchview.onDidChangeSelection(onChangeBranchviewSelection)
     vscode.window.onDidChangeActiveTextEditor(onChangeEditor);
     vscode.window.onDidChangeTextEditorSelection(onChangeEditorSelection)
 
@@ -33,7 +33,7 @@ export async function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChang
                 editor.revealRange(selection)
         }
     }
-    await branchProvider.refresh(astItem.astNode)
+    // await branchProvider.refresh(astItem.astNode)
 }
 export function onChangeBranchviewSelection(e: vscode.TreeViewSelectionChangeEvent<BranchItem>): void {
 }

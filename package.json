@@ -13,32 +13,22 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "ts-ast-explorer.helloWorld",
-        "title": "Hello World"
-      }
-    ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "package-explorer",
-          "title": "Package Explorer",
+          "id": "ast-explorer",
+          "title": "AST Explorer",
           "icon": "media/dep.svg"
         }
       ]
     },
     "views": {
-      "package-explorer": [
+      "ast-explorer": [
         {
           "id": "ASTTreeview",
           "name": "AST explorer",
           "icon": "media/dep.svg",
           "contextualTitle": "ts AST treeview"
-        },
-        {
-          "id": "ASTBranchview",
-          "name": "ts AST branch"
         }
       ]
     },
