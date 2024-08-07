@@ -1,9 +1,11 @@
 import { treeview, astProvider } from './extension'
+import type { ASTProvider } from './treeviewAST';
 import * as vscode from 'vscode';
 import { ASTItem } from './treeviewAST';
 import { compile } from './utils';
 import { BranchItem } from './branchviewAST';
 import * as ts from 'typescript';
+import { ProgressReportStage } from '@vscode/test-electron';
 
 
 
@@ -38,15 +40,27 @@ export async function onChangeTreeviewSelection(e: vscode.TreeViewSelectionChang
 export function onChangeBranchviewSelection(e: vscode.TreeViewSelectionChangeEvent<BranchItem>): void {
 }
 
+let ast : ts.SourceFile // ##
 export function onChangeEditor(editor: vscode.TextEditor | undefined): void {
     if (editor) {
         let languageId = editor.document.languageId;
         console.log(`Active editor changed to: ${editor.document.fileName} with languageId: ${languageId}`);
 
         // Compile the source code to AST and refresh the providers
-        let ast = compile(editor)
-        astProvider.refresh(ast)
+        ast = compile(editor)
+        if (ast)  { 
+            let selection: vscode.Selection = editor.selection
+            let range = new vscode.Range(selection.start, selection.end);
+
+            // astProvider.refresh(ast)
+            treeviewRevealOnRange(astProvider, treeview, range, ast)
+        }
     }
+}
+
+function treeviewRevealOnRange(astProvider: ASTProvider, tv: vscode.TreeView<ASTItem>, range: vscode.Range, ast: ts.SourceFile) {
+    astProvider.refresh(ast)
+
 }
 
 let nrCalls = 0 // detect infinite recursion
@@ -62,12 +76,34 @@ export async function onChangeEditorSelection(e: vscode.TextEditorSelectionChang
         return
     }
 
-    let deepestItem = deepesItemInRange(rootItem, range)
+    let deepestItem : ASTItem | null = deepesItemInRange(rootItem, range)
     if (!deepestItem) {
         return
     }
+    // if (treeview) {
+    //     console.log('treeview defined')
+    // } else {
+    //     console.log('treeview undefined')
+    // }
+    // treeview.focus()
+    console.log(`reveal ${rangeToStr(range)}`)
+    await treeview.reveal(deepestItem, { select: true, focus: true, expand: true });
+    await astProvider.refresh(ast)
     await treeview.reveal(deepestItem, { select: true, focus: true, expand: true });
     return
+}
+
+function ASTItemtoStr(item: ASTItem) {
+    `${item.label}`
+}
+
+function rangeToStr(range: vscode.Range) {
+    return `${posToStr(range.start)}, ${posToStr(range.end)}`
+}
+
+
+function posToStr(pos: vscode.Position) {
+    return `(${pos.line}, ${pos.character}) `
 }
 
 // find the deepest items that contains the range
@@ -97,18 +133,24 @@ function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
     return deepestItem;
 }
 
-function itemInRange(item: ASTItem, range: vscode.Range): boolean {
+
+
+function itemRange(item: ASTItem) : vscode.Range{
     let node: ts.Node = item.astNode;
     let sourceFile = node.getSourceFile();
 
     let start = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
     let end = ts.getLineAndCharacterOfPosition(sourceFile, node.getEnd());
 
-    const itemRange = new vscode.Range(
+    return new vscode.Range(
         start.line,
         start.character,
         end.line,
         end.character
     );
-    return itemRange.contains(range);
+
+}
+
+function itemInRange(item: ASTItem, range: vscode.Range): boolean {
+    return itemRange(item).contains(range);
 }

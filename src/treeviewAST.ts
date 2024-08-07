@@ -28,9 +28,11 @@ export class ASTProvider implements vscode.TreeDataProvider<ASTItem> {
     ) {
         this.onDidChangeTreeData = new vscode.EventEmitter<ASTItem | null | undefined>().event
     }
+
     getTreeItem(element: ASTItem): vscode.TreeItem {
         return element;
     }
+    
     getChildren(element?: ASTItem | undefined): vscode.ProviderResult<ASTItem[]> {
         if (!this.root) { return [] }
         if (!element) {

@@ -15,6 +15,8 @@ export function initBranchview(context: vscode.ExtensionContext) {
 export class BranchProvider implements vscode.TreeDataProvider<BranchItem> {
     private onDidChangeTreeDataEmitter: vscode.EventEmitter<BranchItem | undefined | null | void> = new vscode.EventEmitter<BranchItem | undefined | null | void>();
     readonly onDidChangeTreeData: vscode.Event<BranchItem | undefined | null | void> = this.onDidChangeTreeDataEmitter.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<number | undefined> = new vscode.EventEmitter<number | undefined>();
+
 
 
     refresh(root: BranchItem | ts.Node): BranchItem {
