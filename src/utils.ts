@@ -138,3 +138,13 @@ function getFileType(): string | undefined {
     }
     return undefined;
 }
+
+export function rangeToStr(range: vscode.Range) {
+    return `${posToStr(range.start)}, ${posToStr(range.end)}`
+}
+
+
+export function posToStr(pos: vscode.Position) {
+    return `(${pos.line}, ${pos.character}) `
+}
+

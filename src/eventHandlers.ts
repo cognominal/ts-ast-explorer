@@ -2,7 +2,7 @@ import { treeview, astProvider } from './extension'
 import type { ASTProvider } from './treeviewAST';
 import * as vscode from 'vscode';
 import { ASTItem } from './treeviewAST';
-import { compile } from './utils';
+import { compile, rangeToStr } from './utils';
 import { BranchItem } from './branchviewAST';
 import * as ts from 'typescript';
 import { ProgressReportStage } from '@vscode/test-electron';
@@ -93,19 +93,6 @@ export async function onChangeEditorSelection(e: vscode.TextEditorSelectionChang
     return
 }
 
-function ASTItemtoStr(item: ASTItem) {
-    `${item.label}`
-}
-
-function rangeToStr(range: vscode.Range) {
-    return `${posToStr(range.start)}, ${posToStr(range.end)}`
-}
-
-
-function posToStr(pos: vscode.Position) {
-    return `(${pos.line}, ${pos.character}) `
-}
-
 // find the deepest items that contains the range
 function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
     let kids = astProvider.getChildren(item);
@@ -125,7 +112,7 @@ function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
             foundItem = undefined;
         } else {
             foundItem = (kids as ASTItem[]).find((child) => {
-                return itemInRange(child, range)
+                return child.itemInRange(range)
             });
         }
         iteration++;
@@ -135,22 +122,3 @@ function deepesItemInRange(item: ASTItem, range: vscode.Range): ASTItem | null {
 
 
 
-function itemRange(item: ASTItem) : vscode.Range{
-    let node: ts.Node = item.astNode;
-    let sourceFile = node.getSourceFile();
-
-    let start = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
-    let end = ts.getLineAndCharacterOfPosition(sourceFile, node.getEnd());
-
-    return new vscode.Range(
-        start.line,
-        start.character,
-        end.line,
-        end.character
-    );
-
-}
-
-function itemInRange(item: ASTItem, range: vscode.Range): boolean {
-    return itemRange(item).contains(range);
-}

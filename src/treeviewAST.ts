@@ -73,4 +73,31 @@ export class ASTItem extends vscode.TreeItem {
     ) {
         super(label, collapsibleState);
     }
+
+
+    toStr() {
+    `${this.label}`
+    }
+
+    itemRange() : vscode.Range{
+        let node: ts.Node = this.astNode;
+        let sourceFile = node.getSourceFile();
+    
+        let start = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart());
+        let end = ts.getLineAndCharacterOfPosition(sourceFile, node.getEnd());
+    
+        return new vscode.Range(
+            start.line,
+            start.character,
+            end.line,
+            end.character
+        );
+    
+    }
+    
+    itemInRange(range: vscode.Range): boolean {
+        return this.itemRange().contains(range);
+    }
+
+
 }
